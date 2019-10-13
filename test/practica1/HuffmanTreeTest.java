@@ -40,11 +40,12 @@ public class HuffmanTreeTest {
         repeatChar(text,120,'E');
         
         HuffmanTree instance = new HuffmanTree(text.toString());
-        byte[] expResult = {(byte)0b01011110, (byte)0b11111110};
+        //byte[] expResult = {(byte)0b01011110, (byte)0b11111110};
+        byte[] expResult = { (byte) 0b01011110, (byte) 0b11111110, (byte) 0b11110000 };
         byte[] result = instance.encoding("EDCML");
         assertArrayEquals(expResult, result);
     }
-
+    
     /**
      * Test of decoding method, of class HuffmanTree.
      */
@@ -63,7 +64,8 @@ public class HuffmanTreeTest {
         repeatChar(text,120,'E');
         
         HuffmanTree instance = new HuffmanTree(text.toString());
-        byte[] code = {(byte)0b01011110, (byte)0b11111110};
+        //byte[] code = {(byte)0b01011110, (byte)0b11111110};
+        byte[] code = { (byte) 0b01011110, (byte) 0b11111110, (byte) 0b11110000 };
         String result = instance.decoding(code);
         assertEquals("EDCML", result);
     }

@@ -16,17 +16,26 @@ import java.util.Stack;
  * @author jvelez
  */
 public class HuffmanTree {
-    
+    private static final char ETX = 0x03; //End of text
     
     private Map<Character,Integer> frequencyTable;
-    private BinaryTree<ComparablePair<Character,Integer>> codeTree;
+    private BinaryTree<HuffmanNode> codeTree;
     
     private HashMap<Character,Integer> encodingTable;            
     
     
     public static void main(String[] args){
-        HuffmanTree ht = new HuffmanTree("aaabbbbccd");
-        System.out.println("Todo OK");
+        PriorityQueue<LinkedBinaryTree<HuffmanNode>> pq = new PriorityQueue<>(new BinaryTreeComparator());
+        LinkedBinaryTree<HuffmanNode> t = new LinkedBinaryTree<>();
+        t.addRoot(new HuffmanNode(3,'a'));
+        pq.add(t);
+        t = new LinkedBinaryTree<>();
+        t.addRoot(new HuffmanNode(1,'z'));
+        pq.add(t);
+        t = new LinkedBinaryTree<>();
+        t.addRoot(new HuffmanNode(2,'m'));
+        pq.add(t);        
+        
     }
     
     
@@ -48,7 +57,18 @@ public class HuffmanTree {
      * @return 
      */
     byte [] encoding(String text) {
-        throw new RuntimeException("Not implemented yet");
+        BitArrayWriter baw = new BitArrayWriter();
+        for(char c : text.toCharArray()){
+            Integer code;
+            code = encodingTable.get(c);
+            if(code != null){
+                baw.write(code);
+            }else{
+                throw new RuntimeException("String cannot be encoded with this instance of HuffmanTree, check that the instance has been initialized with it and try again");
+            }
+        }
+        baw.write(encodingTable.get(ETX));
+        return baw.toArray();
     }
     
     /**
@@ -57,10 +77,29 @@ public class HuffmanTree {
      * @return 
      */
     String decoding(byte [] code) {
-        throw new RuntimeException("Not implemented yet");
+        BitArrayReader bar = new BitArrayReader(code);
+        Position<HuffmanNode> position;
+        Character readedChar;
+        StringBuffer returnBuffer = new StringBuffer();
+        do{
+            position = codeTree.root();
+            while( !codeTree.isLeaf(position) ){
+                int readed = bar.readBit();
+                if(readed == 0){
+                    position = codeTree.left(position);
+                }else{
+                    position = codeTree.right(position);
+                }
+            }
+            readedChar = position.getElement().getCharacter();
+            returnBuffer.append(readedChar);
+        }while( readedChar != ETX );
+        returnBuffer.setLength(returnBuffer.length()-1); //remove the ETX char
+        return returnBuffer.toString();
     }
 
     private void buildFrequencyTable(String text) {
+        frequencyTable.put(ETX,1);
         for(Character c : text.toCharArray()){
             if(!frequencyTable.containsKey(c)){
                 frequencyTable.put(c, 1);
@@ -68,40 +107,42 @@ public class HuffmanTree {
                 frequencyTable.replace(c, frequencyTable.get(c) + 1);
             }
         }
+        //Add the ETX char to the frequency table
     }
     
     private void buildCodeTree(){
-        PriorityQueue<LinkedBinaryTree<ComparablePair<Character,Integer>>> priorityq = new PriorityQueue<>(1, new BinaryTreeComparator());
+        PriorityQueue<LinkedBinaryTree<HuffmanNode>> priorityq = new PriorityQueue<>(new BinaryTreeComparator());
         for(Map.Entry<Character,Integer> e : frequencyTable.entrySet()){
             LinkedBinaryTree auxTree = new LinkedBinaryTree();
-            auxTree.addRoot(new ComparablePair<>(e.getKey(),e.getValue()));
-            priorityq.add(auxTree);
+            auxTree.addRoot(new HuffmanNode(e.getValue(),e.getKey()));
+            priorityq.offer(auxTree);
         }
         
+        
         while(priorityq.size() > 1){
-            LinkedBinaryTree<ComparablePair<Character,Integer>> t1 = priorityq.poll();
-            LinkedBinaryTree<ComparablePair<Character,Integer>> t2 = priorityq.poll();
-            LinkedBinaryTree<ComparablePair<Character,Integer>> merge = new LinkedBinaryTree<>();
-            int sum = t1.root().getElement().getSecond();
-            sum += t2.root().getElement().getSecond();
-            ComparablePair<Character,Integer> cp = new ComparablePair<>(null,sum);
+            LinkedBinaryTree<HuffmanNode> t1 = priorityq.remove();
+            LinkedBinaryTree<HuffmanNode> t2 = priorityq.remove();
+            LinkedBinaryTree<HuffmanNode> merge = new LinkedBinaryTree<>();
+            int sum = t1.root().getElement().getValue();
+            sum += t2.root().getElement().getValue();
+            HuffmanNode cp = new HuffmanNode(sum);
             merge.addRoot(cp);
-            Position<ComparablePair<Character,Integer>> root = merge.root();
+            Position<HuffmanNode> root = merge.root();
             merge.attachLeft(root, t1);
             merge.attachRight(root, t2);
-            priorityq.add(merge);
+            priorityq.offer(merge);
         }  
         
-        codeTree = priorityq.poll();
+        codeTree = priorityq.remove();  
     }
     
     private void buildEncodingTable(){
         if(codeTree.isEmpty()) throw new RuntimeException("Cannot extract a encoding table from an empty tree");
-        Stack<Pair<Position<ComparablePair<Character,Integer>>,Integer>> positions = new Stack<>();
+        Stack<Pair<Position<HuffmanNode>,Integer>> positions = new Stack<>();
         
         positions.push(new Pair(codeTree.root(),0));
         while(!positions.isEmpty()){
-            Pair<Position<ComparablePair<Character,Integer>>,Integer> pos = positions.pop();
+            Pair<Position<HuffmanNode>,Integer> pos = positions.pop();
             
             if(codeTree.hasLeft(pos.getFirst())){
                 int newCode = pos.getSecond()<<1;
@@ -112,7 +153,7 @@ public class HuffmanTree {
                 positions.push(new Pair(codeTree.right(pos.getFirst()),newCode) );
             }
             if(codeTree.isLeaf(pos.getFirst())){    
-                encodingTable.put(pos.getFirst().getElement().getFirst(), pos.getSecond());
+                encodingTable.put(pos.getFirst().getElement().getCharacter(), pos.getSecond());
             }
         }      
     }
@@ -133,14 +174,53 @@ public class HuffmanTree {
         return value;       
     }
     
-    private static class BinaryTreeComparator implements Comparator<BinaryTree>{
+    private static class HuffmanNode implements Comparable<HuffmanNode>{
+
+        int value;
+        char character;
+
+        public HuffmanNode(int value, char character) {
+            this(value);
+            this.character = character;
+        }
+        
+        public HuffmanNode(int value) {
+            this.value = value;
+        }
+        
+        @Override
+        public int compareTo(HuffmanNode o) {
+            if(o == null) throw new RuntimeException("Cannot compare with null");
+            return Integer.compare(getValue(), o.getValue());
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public void setValue(int value) {
+            this.value = value;
+        }
+
+        public char getCharacter() {
+            return character;
+        }
+
+        public void setCharacter(char character) {
+            this.character = character;
+        }
+        
+    }
+    
+    
+    private static class BinaryTreeComparator implements Comparator<LinkedBinaryTree>{
 
         @Override
-        public int compare(BinaryTree o1, BinaryTree o2) {
+        public int compare(LinkedBinaryTree o1, LinkedBinaryTree o2) {
             if(o1.isEmpty() || o2.isEmpty()) throw new RuntimeException("Empty trees cannot be compared");
             try{
                 Comparable c1 = (Comparable) o1.root().getElement();
-                Comparable c2 = (Comparable) o1.root().getElement();
+                Comparable c2 = (Comparable) o2.root().getElement();
                 return c1.compareTo(c2);
             }catch(ClassCastException cce){
                 throw new RuntimeException("The trees must contain Comparable values");

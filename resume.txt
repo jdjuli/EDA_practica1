@@ -1,8 +1,0 @@
-aaaa AAA
-
-Num files: 74
-
-Log messages:
-2019/10/04 11:39:40 - Detectado Chrome - Cierre el programa
-
-Hash Value: 1420768955

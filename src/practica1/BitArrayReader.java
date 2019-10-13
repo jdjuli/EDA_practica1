@@ -19,7 +19,7 @@ public class BitArrayReader  {
     private final byte[] data;
     private int index;
     private byte buffer;
-    private byte lastBit;    
+    private byte lastBit = 7;    
     
     public BitArrayReader(byte[] data){
         this.data = data;
@@ -28,16 +28,17 @@ public class BitArrayReader  {
     
     public int readBit(){
         int data = -1;
-        if(lastBit >= 0){
-            int mask = (int) Math.pow(2, 7-lastBit);
+        if(lastBit > 0){
+            int mask = (int) Math.pow(2, lastBit);
             data = buffer & mask;
-            lastBit++;
-        }
-        if(lastBit == 0){
+            lastBit--;
+        }else{
+            int mask = (int) Math.pow(2, lastBit);
+            data = buffer & mask;
             loadByteOnBuffer();
-            lastBit = 0;
+            lastBit = 7;
         }
-        return lastBit;
+        return data;
     }
     
 

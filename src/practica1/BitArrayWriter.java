@@ -16,17 +16,18 @@ import java.util.Queue;
  */
 public class BitArrayWriter  {
 
-    private final Queue<Byte> queue;
+    public Queue<Byte> queue;
     private byte buffer;
     private byte lastBit;    
     
     public BitArrayWriter(){
+        if(queue != null) throw new RuntimeException("Just testing...");
         queue = new LinkedList<>();
     }
 
     public byte[] toArray(){
         if(buffer != 0){
-            buffer <<= (7 - highestBit(buffer));
+            buffer <<= (highestBit(buffer));
             queue.add(buffer);
         }
         byte[] ret = new byte[queue.size()];
@@ -37,24 +38,22 @@ public class BitArrayWriter  {
     }
     
     public void write(int bits){
-        System.err.println("write "+bits);
         int highBit = highestBit(bits);
         int mask;
         while(highBit >= 0){
             if(lastBit < 7){
                 mask = (int) Math.pow(2, highBit);
-                buffer |= ((bits&mask)==0)? 0 : 1;
-                buffer <<= 1;
+                this.buffer |= ((bits&mask)==0)? 0 : 1;
+                this.buffer <<= 1;
                 lastBit++; 
             }else{
                 mask = (int) Math.pow(2, highBit);
-                buffer |= ((bits&mask)==0)? 0 : 1;
-                queue.add(buffer);
-                buffer = 0;
+                this.buffer |= ((bits&mask)==0)? 0 : 1;
+                this.queue.offer(this.buffer);
+                this.buffer = 0;
                 lastBit = 0;
             }
             highBit--;
-            System.err.println( Integer.toBinaryString(Byte.toUnsignedInt(buffer) ) ) ;
         }
     }
     
