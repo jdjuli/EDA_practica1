@@ -21,7 +21,7 @@ public class HuffmanTree {
     private Map<Character,Integer> frequencyTable;
     private BinaryTree<HuffmanNode> codeTree;
     
-    private HashMap<Character,Integer> encodingTable;            
+    private HashMap<Character,BitArray> encodingTable;            
     
     
     public static void main(String[] args){
@@ -59,7 +59,7 @@ public class HuffmanTree {
     byte [] encoding(String text) {
         BitArrayWriter baw = new BitArrayWriter();
         for(char c : text.toCharArray()){
-            Integer code;
+            BitArray code;
             code = encodingTable.get(c);
             if(code != null){
                 baw.write(code);
@@ -68,7 +68,8 @@ public class HuffmanTree {
             }
         }
         baw.write(encodingTable.get(ETX));
-        return baw.toArray();
+        byte[] ret = baw.toArray();
+        return ret;
     }
     
     /**
@@ -118,7 +119,6 @@ public class HuffmanTree {
             priorityq.offer(auxTree);
         }
         
-        
         while(priorityq.size() > 1){
             LinkedBinaryTree<HuffmanNode> t1 = priorityq.remove();
             LinkedBinaryTree<HuffmanNode> t2 = priorityq.remove();
@@ -138,40 +138,28 @@ public class HuffmanTree {
     
     private void buildEncodingTable(){
         if(codeTree.isEmpty()) throw new RuntimeException("Cannot extract a encoding table from an empty tree");
-        Stack<Pair<Position<HuffmanNode>,Integer>> positions = new Stack<>();
+        Stack<Pair<Position<HuffmanNode>,BitArray>> positions = new Stack<>();
         
-        positions.push(new Pair(codeTree.root(),0));
+        positions.push(new Pair(codeTree.root(),new BitArray()));
         while(!positions.isEmpty()){
-            Pair<Position<HuffmanNode>,Integer> pos = positions.pop();
+            Pair<Position<HuffmanNode>,BitArray> pos = positions.pop();
             
             if(codeTree.hasLeft(pos.getFirst())){
-                int newCode = pos.getSecond()<<1;
+                BitArray newCode = pos.getSecond().clone();
+                newCode.pushBitRight(0);
+                //int newCode = pos.getSecond()<<1;
                 positions.push(new Pair(codeTree.left(pos.getFirst()),newCode) );
             }
             if(codeTree.hasRight(pos.getFirst())){
-                int newCode = (pos.getSecond()<<1) | 1;
+                BitArray newCode = pos.getSecond().clone();
+                newCode.pushBitRight(1);
+                //int newCode = (pos.getSecond()<<1) | 1;
                 positions.push(new Pair(codeTree.right(pos.getFirst()),newCode) );
             }
             if(codeTree.isLeaf(pos.getFirst())){    
                 encodingTable.put(pos.getFirst().getElement().getCharacter(), pos.getSecond());
             }
         }      
-    }
-    
-    /**
-        Returns the concatenations of 1's and 0's contained as ints inside a Stack in the same order they have been pushed
-    */
-    private int stackToInt(Stack<Integer> s){
-        Iterator<Integer> iter = s.iterator();
-        int value = 0;
-        while(iter.hasNext()){
-            int next = iter.next();
-            if(next == 0 || next == 1){
-                value |= next;
-                value <<=  1;
-            }
-        }
-        return value;       
     }
     
     private static class HuffmanNode implements Comparable<HuffmanNode>{
@@ -214,7 +202,6 @@ public class HuffmanTree {
     
     
     private static class BinaryTreeComparator implements Comparator<LinkedBinaryTree>{
-
         @Override
         public int compare(LinkedBinaryTree o1, LinkedBinaryTree o2) {
             if(o1.isEmpty() || o2.isEmpty()) throw new RuntimeException("Empty trees cannot be compared");
@@ -227,4 +214,5 @@ public class HuffmanTree {
             }
         }
     }
+    
 }

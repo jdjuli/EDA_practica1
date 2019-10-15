@@ -26,8 +26,9 @@ public class BitArrayWriter  {
     }
 
     public byte[] toArray(){
-        if(buffer != 0){
-            buffer <<= (highestBit(buffer));
+        if(buffer != 0 || lastBit != 0){
+            //int hiBit = highestBit(buffer);
+            buffer <<= 7 - lastBit;
             queue.add(buffer);
         }
         byte[] ret = new byte[queue.size()];
@@ -37,18 +38,15 @@ public class BitArrayWriter  {
         return ret;
     }
     
-    public void write(int bits){
-        int highBit = highestBit(bits);
-        int mask;
-        while(highBit >= 0){
+    public void write(BitArray bits){
+        int highBit = bits.getLength();
+        while(highBit > 0){
+            this.buffer |= bits.getBit(highBit-1);
             if(lastBit < 7){
-                mask = (int) Math.pow(2, highBit);
-                this.buffer |= ((bits&mask)==0)? 0 : 1;
+                
                 this.buffer <<= 1;
                 lastBit++; 
             }else{
-                mask = (int) Math.pow(2, highBit);
-                this.buffer |= ((bits&mask)==0)? 0 : 1;
                 this.queue.offer(this.buffer);
                 this.buffer = 0;
                 lastBit = 0;
@@ -57,21 +55,4 @@ public class BitArrayWriter  {
         }
     }
     
-    private int highestBit(int num){
-        if(num == 0) return 0;
-        
-        int test;
-        int i = 0;
-        boolean highestBit = false;
-        while( !highestBit && i < 32){
-            test = (int) Math.pow(2,i);
-            if( (num & (~test)) < test ){
-                highestBit = true;
-            }else{
-                i++;
-            }
-        }
-        
-        return i;
-    }    
 }
