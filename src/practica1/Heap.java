@@ -1,5 +1,6 @@
 package practica1;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Queue;
 import material.Position;
@@ -73,19 +74,21 @@ public class Heap <T extends Comparable> extends ArrayBinaryTree<T> {
             Position<T> left = hasLeft(main) ? left(main) : null;
             Position<T> right = hasRight(main) ? right(main) : null;
             Position<T> toSwap = null;
+            
             if(left!=null && right != null){
                 if( canSwap(main,right) ){
-                    if( canSwap(main,left) ){
+                    //if( canSwap(main,left) ){
                         toSwap = max(left,right);
-                    }else{
-                        toSwap = right;
-                    }
+                    //}else{
+                        //toSwap = right;
+                    //}
                 }else if( canSwap(main,right) ){
                     toSwap = left;
                 }
             }else if(right == null && canSwap(main,left)){
                 toSwap = left;
             }
+            
             if(toSwap != null){
                 swap(main,toSwap);
                 queue.add(toSwap);
@@ -123,5 +126,16 @@ public class Heap <T extends Comparable> extends ArrayBinaryTree<T> {
     private Position<T> getLastPosition(){
         if(isEmpty()) throw new RuntimeException("Heap is empty");
         return array.get(size-1);
+    }
+    
+    public boolean isSorted()
+{
+        boolean sorted = true;        
+        Comparator c = Comparator.reverseOrder();
+        for (int i = 1; i < array.size(); i++) {
+            if (c.compare(array.get(i-1).getElement(), array.get(i).getElement()) != 1) sorted = false;
+        }
+
+        return sorted;
     }
 }

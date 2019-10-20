@@ -79,6 +79,74 @@ public class TreeUtilTest {
         //Assert equality
         assertEquals(expected1.toString(),expected2.toString());
     }
+    
+    @Test
+    public void testClone3(){
+        System.out.println("clone3");
+        LinkedTree<Integer> tree1 = new LinkedTree<>();
+        /*
+                                                                       a
+                                                                 +-----+--+
+                                                                 b     x  x
+                                                     +-----+--+--+
+                                                     c     x  x  d
+                       +--------+--+--------+--------+           +--+
+                       e        x  x        f        g           x  x
+           +-----+-----+              +--+--+--+     +
+           h     i     j              x  x  x  x     k
+        +--+--+  +--+  +--+--+                    +--+--+--+
+        x  x  x  x  x  x  x  x                    x  x  x  x
+        */
+        //Root
+        Position<Integer> a = tree1.addRoot(1);
+        //Depth = 2;
+        Position<Integer> b = tree1.add(2,a);
+        tree1.add(3,a);
+        tree1.add(4,a);
+        Position<Integer> c = tree1.add(5, b);
+        tree1.add(6, b);
+        tree1.add(7, b);
+        Position<Integer> d = tree1.add(8, b);
+        //Depth = 3
+        Position<Integer> e = tree1.add(9, c);
+        tree1.add(10, c);
+        tree1.add(11, c);
+        Position<Integer> f = tree1.add(12,c);
+        Position<Integer> g = tree1.add(13, c);
+        tree1.add(14, d);
+        tree1.add(15, d);
+        //Depth = 4
+        Position<Integer> h = tree1.add(16,e);
+        Position<Integer> i = tree1.add(17,e);
+        Position<Integer> j = tree1.add(18,e);
+        tree1.add(19, f);
+        tree1.add(20, f);
+        tree1.add(21, f);
+        tree1.add(22, f);
+        Position<Integer> k = tree1.add(23,g);
+        //Depth = 5
+        tree1.add(24, h);
+        tree1.add(25, h);
+        tree1.add(26, h);
+        tree1.add(27, i);
+        tree1.add(28, i);
+        tree1.add(29, j);
+        tree1.add(30, j);
+        tree1.add(31, j);
+        tree1.add(32, k);
+        tree1.add(33, k);
+        tree1.add(34, k);
+        tree1.add(35, k);
+        LinkedTree<Integer> tree2 = new LinkedTree<>();
+        TreeUtil.clone(tree1, tree2);
+        
+        StringBuilder exp1 = new StringBuilder();
+        StringBuilder exp2 = new StringBuilder();
+        
+        treeToString(tree1,exp1);
+        treeToString(tree2,exp2);
+        assertEquals(exp1.toString(),exp2.toString());
+    }
 
     private void treeToString(LinkedTree<Integer> tree1, StringBuilder expected) {
         for (Position<Integer> i:tree1) {
