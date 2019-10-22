@@ -140,7 +140,7 @@ public class HuffmanTreeTest {
             }
             return sb.toString();
         }catch(Exception e){}
-        return "Work in progress...";
+        return "Cannot connect with Wikipedia...";
     }
     
 }

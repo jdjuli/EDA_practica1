@@ -76,14 +76,8 @@ public class Heap <T extends Comparable> extends ArrayBinaryTree<T> {
             Position<T> toSwap = null;
             
             if(left!=null && right != null){
-                if( canSwap(main,right) ){
-                    //if( canSwap(main,left) ){
-                        toSwap = max(left,right);
-                    //}else{
-                        //toSwap = right;
-                    //}
-                }else if( canSwap(main,right) ){
-                    toSwap = left;
+                if(canSwap(main,left) || canSwap(main,right)){
+                    toSwap = max(left,right);
                 }
             }else if(right == null && canSwap(main,left)){
                 toSwap = left;
@@ -126,16 +120,5 @@ public class Heap <T extends Comparable> extends ArrayBinaryTree<T> {
     private Position<T> getLastPosition(){
         if(isEmpty()) throw new RuntimeException("Heap is empty");
         return array.get(size-1);
-    }
-    
-    public boolean isSorted()
-{
-        boolean sorted = true;        
-        Comparator c = Comparator.reverseOrder();
-        for (int i = 1; i < array.size(); i++) {
-            if (c.compare(array.get(i-1).getElement(), array.get(i).getElement()) != 1) sorted = false;
-        }
-
-        return sorted;
     }
 }

@@ -1,5 +1,6 @@
 package practica1;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
@@ -51,24 +52,69 @@ public class HeapTest {
     }
     
     @Test
-    public void testHeap2(){
+    public void testHeapRandom(){
+        final int TEST_SIZE = 1000000;
+        
         Heap<Integer> heap = new Heap();
         assertTrue(heap.isEmpty());
-        Integer[] numbers = new Integer[10];
+        Integer[] numbers = new Integer[TEST_SIZE];
         Random rand = new Random(System.currentTimeMillis());
-        for(int i = 0; i < 10; i++){
-            int r = rand.nextInt(100);
+       
+        for(int i = 0; i < TEST_SIZE; i++){
+            int r = rand.nextInt();
             heap.add(r);
             numbers[i] = r;
         }
-        
+                
         Arrays.sort(numbers);
         
-        for(int i = 9 ; i >= 0 ; i--){
-            if(!numbers[i].equals(heap.top())){
-                System.out.println(i);
-            }
+        for(int i = TEST_SIZE-1 ; i >= 0 ; i--){
             assertEquals(numbers[i],heap.remove());
+        }
+    }
+    
+    @Test
+    public void testHeapRandomReducedDomain(){
+        final int TEST_SIZE = 1000000;
+        
+        Heap<Integer> heap = new Heap();
+        assertTrue(heap.isEmpty());
+        Integer[] numbers = new Integer[TEST_SIZE];
+        Random rand = new Random(System.currentTimeMillis());
+       
+        for(int i = 0; i < TEST_SIZE; i++){
+            int r = rand.nextInt(25);
+            heap.add(r);
+            numbers[i] = r;
+        }
+                
+        Arrays.sort(numbers);
+        
+        for(int i = TEST_SIZE-1 ; i >= 0 ; i--){
+            assertEquals(numbers[i],heap.remove());
+        }
+    }
+    
+    @Test
+    public void testHeapMultipleAdditionAndRemoval(){        
+        Heap<Integer> heap = new Heap();
+        ArrayList<Integer> numbers = new ArrayList<>();
+        
+        testAdditionAndRemoval(heap, numbers, 100000, 50000);
+        testAdditionAndRemoval(heap, numbers, 0, 25000);
+        testAdditionAndRemoval(heap, numbers, 75000, 100000);
+    }
+    
+    private void testAdditionAndRemoval(Heap heap, ArrayList<Integer> numbers, int addition, int removal){
+        Random rand = new Random(System.currentTimeMillis());
+        for(int i = 0; i < addition; i++){
+            int r = rand.nextInt();
+            heap.add(r);
+            numbers.add(r);
+        }
+        numbers.sort(Comparator.naturalOrder());
+        for(int i = 0; i < removal ; i++){
+            assertEquals(numbers.remove(numbers.size()-1),heap.remove());
         }
     }
 }

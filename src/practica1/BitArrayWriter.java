@@ -5,8 +5,6 @@
  */
 package practica1;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -21,16 +19,14 @@ public class BitArrayWriter  {
     private byte lastBit;    
     
     public BitArrayWriter(){
-        if(queue != null) throw new RuntimeException("Just testing...");
         queue = new LinkedList<>();
     }
 
     public byte[] toArray(){
-        if(buffer != 0 || lastBit != 0){
-            //int hiBit = highestBit(buffer);
-            buffer <<= 7 - lastBit;
-            queue.add(buffer);
-        }
+        //add last byte to the queue
+        buffer <<= 7 - lastBit;
+        queue.add(buffer);
+        
         byte[] ret = new byte[queue.size()];
         for(int i = 0; i<ret.length ; i++){
             ret[i] = queue.remove();
