@@ -1,124 +1,157 @@
 package practica1;
 
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
-import material.Position;
 
 /**
  *
  * @author jvelez
  * @param <T>
  */
-public class Heap <T extends Comparable> extends ArrayBinaryTree<T> {
-    
-    int size;
-    
-    public Heap(){
-        super();
+public class Heap<T extends Comparable> {
+
+    private final ArrayList<T> array;
+
+    public Heap() {
+        array = new ArrayList<>();
     }
-    
+
     /**
      * Adds an element to the heap.
-     * @param element 
+     *
+     * @param element
      */
     public void add(T element) {
-        ArrayBinaryTree<T>.Node<T> node = new ArrayBinaryTree<T>.Node<>(this, element, size);
-        array.add(size,node);
-        adjustBottomUp(node);
-        size++;
+        array.add(element);
+        adjustBottomUp(array.size() - 1);
     }
-            
-    
+
     /**
      * Returns the top element of the heap.
-     * @return 
+     *
+     * @return
      */
     public T top() {
-        return root().getElement();        
+        if (array.isEmpty()) {
+            throw new RuntimeException("Heap is empty");
+        }
+        return array.get(0);
     }
 
     /**
      * Removes the top element of the heap and returns it.
-     * @return 
+     *
+     * @return
      */
     public T remove() {
-        if(isEmpty()) throw new RuntimeException("Heap is empty");
-        Position<T> root = root();
-        Position<T> replacement = getLastPosition();
-        T value = root.getElement();
-        swap(root,replacement);
-        remove(replacement);
-        if(!isEmpty()){
+        if (isEmpty()) {
+            throw new RuntimeException("Heap is empty");
+        }
+        T value = array.get(0);
+        swap(0, array.size() - 1);
+        array.remove(array.size() - 1);
+        if (!isEmpty()) {
             adjustTopDown();
         }
-        size--;
         return value;
     }
 
     /**
-    * 
-    * @return True if the heap is empty.
-    */
-    //boolean isEmpty() {
-    @Override
+     *
+     * @return True if the heap is empty.
+     */
     public boolean isEmpty() {
-        return super.isEmpty();
+        return array.isEmpty();
     }
-    
-    private void adjustTopDown(){
-        Queue<Position<T>> queue = new LinkedList<>();
-        queue.add(root());
-        while(!queue.isEmpty() && !isLeaf(queue.peek()) ){
-            Position<T> main = queue.remove();
-            Position<T> left = hasLeft(main) ? left(main) : null;
-            Position<T> right = hasRight(main) ? right(main) : null;
-            Position<T> toSwap = null;
-            
-            if(left!=null && right != null){
-                if(canSwap(main,left) || canSwap(main,right)){
-                    toSwap = max(left,right);
+
+    private void adjustTopDown() {
+        Queue<Integer> queue = new LinkedList<>();
+        queue.add(0);
+        while (!queue.isEmpty() && !isLeaf(queue.peek())) {
+            int main = queue.remove();
+            int left = leftChild(main);
+            int right = rightChild(main);
+            int toSwap = -1;
+
+            if (hasLeftChild(main) && hasRightChild(main)) {
+                if (canSwap(main, left) || canSwap(main, right)) {
+                    toSwap = max(left, right);
                 }
-            }else if(right == null && canSwap(main,left)){
+            } else if (!hasRightChild(main) && canSwap(main, left)) {
                 toSwap = left;
             }
-            
-            if(toSwap != null){
-                swap(main,toSwap);
+
+            if (toSwap != -1) {
+                swap(main, toSwap);
                 queue.add(toSwap);
             }
         }
     }
-    
-    private void adjustBottomUp(Position<T> source){
-        Queue<Position<T>> queue = new LinkedList<>();
+
+    private void adjustBottomUp(int source) {
+        Queue<Integer> queue = new LinkedList<>();
         queue.add(source);
-        while(!queue.isEmpty() && !isRoot(queue.peek())){
-            Position<T> main = queue.remove();
-            Position<T> parent = parent(main);
-            if(canSwap(parent,main)){
-                swap(parent,main);
+        while (!queue.isEmpty() && (queue.peek() != 0)) {
+            int main = queue.remove();
+            int parent = parent(main);
+            if (canSwap(parent, main)) {
+                swap(parent, main);
                 queue.add(parent);
             }
         }
     }
-    
+
     /**
-     * Tests if (p1 <= p2) and items of both positions must be swapped
-     * @param p1
-     * @param p2
-     * @return 
+     * Tests if (p1 <= p2) and items of both positions must be swapped @param p1
+     * @param p2 @return
+     *
      */
-    private boolean canSwap(Position<T> p1, Position<T> p2){
-        return p1.getElement().compareTo(p2.getElement()) <= 0;
+    private boolean canSwap(int p1, int p2) {
+        return array.get(p1).compareTo(array.get(p2)) <= 0;
     }
-    
-    private Position<T> max(Position<T> p1, Position<T> p2){
-        return p1.getElement().compareTo(p2.getElement()) > 0 ? p1 : p2;
+
+    private void swap(int p1, int p2) {
+        T aux = array.get(p1);
+        array.set(p1, array.get(p2));
+        array.set(p2, aux);
     }
-    
-    private Position<T> getLastPosition(){
-        if(isEmpty()) throw new RuntimeException("Heap is empty");
-        return array.get(size-1);
+
+    private boolean isLeaf(int index) {
+        if (index < array.size()) {
+            return !hasLeftChild(index) && !hasRightChild(index);
+        }
+        throw new RuntimeException("Fix me");
     }
+
+    private boolean hasRightChild(int index) {
+        int rightPosition = rightChild(index);
+        return rightPosition < array.size() && array.get(rightPosition) != null;
+    }
+
+    private boolean hasLeftChild(int index) {
+        int leftPosition = leftChild(index);
+        return leftPosition < array.size() && array.get(leftPosition) != null;
+    }
+
+    private int leftChild(int index) {
+        return index * 2 + 1;
+    }
+
+    private int rightChild(int index) {
+        return index * 2 + 2;
+    }
+
+    private int parent(int index) {
+        if (index % 2 == 0) { // Is right child
+            return (index - 2) / 2;
+        } else { // Is left child
+            return (index - 1) / 2;
+        }
+    }
+
+    private int max(int p1, int p2) {
+        return array.get(p1).compareTo(array.get(p2)) > 0 ? p1 : p2;
+    }
+
 }
