@@ -22,9 +22,6 @@ public class TreeUtil {
      * @param dest
      */
     public static <T> void clone(NAryTree<T> source, NAryTree<T> dest) {
-        //Usar una cola para resolverlo
-        Position<T> auxSrc = source.root();
-
         Queue<Pair<Position<T>, Position<T>>> queueSourcePositions = new LinkedList<>();
         queueSourcePositions.add(new Pair(source.root(), null));
 
